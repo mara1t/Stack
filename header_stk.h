@@ -61,4 +61,3 @@ void StackDump    (Stack* stk, const int line, const int error);
 int  check_stk_err(Stack* stk, const int line);
 int  MurMurHash   (Stack* stk);
 int  stk_status   (Stack* stk);
-

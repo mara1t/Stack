@@ -1,4 +1,4 @@
-#define ONE_LVL_PROTECT
+#define TWO_LVL_PROTECT
 #include "stk_header.h"
 
 void StackPush (Stack* stk, const data_type value)
@@ -102,25 +102,49 @@ int StackPeek (Stack* stk)
 void StackDump (Stack* stk, const int line, const int error)
 {
     FILE* canary_file = fopen("canary_errors.txt", "w");
+    fprintf(canary_file, "ERROR types:\n"
+    "NO_ERROR              =  0\n"
+    "STACK_UNDERFLOW       = -1\n"
+    "STACK_OVERFLOW        = -2\n"
+    "DATA_SIZE_ERR         = -3\n"
+    "DATA_CAPACITY_ERR     = -4\n"
+    "NULL_STK_POINTER      = -5\n"
+    "DATA_LEFT_CANARY_ERR  = -6\n"
+    "DATA_RIGHT_CANARY_ERR = -7\n"
+    "STK_LEFT_CANARY_ERR   = -8\n"
+    "STK_RIGHT_CANARY_ERR  = -9\n"
+    "HASH_ERR              = -10\n\n");
 
     #ifdef NO_PROTECT
-        fprintf(canary_file, "No canary protect\n");
+        fprintf(canary_file, "<<No canary protect>>\n");
     #else 
-        fprintf(canary_file, "Canary protection\n");
+        #ifdef TWO_LVL_PROTECT
+            fprintf(canary_file, "<<Canary protection and hash protection>>\n");
+        #else
+            fprintf(canary_file, "<<Canary protection>>\n");
+        #endif
         if (error < 0)
+        {
             fprintf(canary_file, "Stack has error type: %d on line %d\n", error, line);
+            fprintf(canary_file, "*stk left canary   = %d\n"
+                                 " stk right canary  = %d\n"
+                                 "*data left canary  = %d\n"
+                                 " data right canary = %d\n"
+                                 "*default left canary  = %d\n"
+                                 " default right canary = %d\n",
+            stk->left_stk_can, stk->right_stk_can, LEFT_DATA_CAN_, RIGHT_DATA_CAN_, const_l_stk_canary, const_r_stk_canary);
+        }
     #endif
 
-    fprintf(canary_file, "data pointer = %p; stack size = %d; stack capacity = %d\n", stk->data, stk->size, stk->capacity);
+    fprintf(canary_file, "*data pointer = %p; *stack size = %d; *stack capacity = %d\n", stk->data, stk->size, stk->capacity);
     
     for (int counter = 0; counter < stk->size; counter++)
     {
-        fprintf(canary_file, "stk->data[%d] = %d\n ", counter, stk->data[counter]);
+        fprintf(canary_file, "data[%d] = %d\n", counter, stk->data[counter]);
     }
     fclose(canary_file);
 }
 
-// check_stk_err (stk, __LINE__);
 int MurMurHash (Stack* stk)
 {
     int sum = 0;

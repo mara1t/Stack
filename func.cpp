@@ -12,7 +12,9 @@ void StackPush (Stack* stk, const data_type value)
     stk->size++;
 
     #ifdef TWO_LVL_PROTECT
+    
         stk->hash = MurMurHash(stk);
+    
     #endif
 
     CHECK_STK_;
@@ -44,9 +46,13 @@ void StackCtor (Stack* stk, const int capacity)
     stk->size = 0;
 
     #ifdef NO_PROTECT
+    
         stk->data = (data_type*) calloc(1, stk->capacity * sizeof(data_type));
+    
     #endif
+    
     #ifndef NO_PROTECT
+    
         stk->data_canary = (char*) calloc(1, stk->capacity * sizeof(data_type) + 2 * sizeof(can_type));
         stk->data = (data_type*)(stk->data_canary + sizeof(can_type));
 
@@ -55,9 +61,13 @@ void StackCtor (Stack* stk, const int capacity)
 
         LEFT_DATA_CAN_ = const_l_stk_canary;
         RIGHT_DATA_CAN_ = const_r_stk_canary;
+    
     #endif
+    
     #ifdef TWO_LVL_PROTECT
+    
        stk->hash = MurMurHash(stk);
+    
     #endif
    
     CHECK_STK_;
@@ -79,15 +89,21 @@ void StackResize (Stack* stk, int new_capacity)
     CHECK_STK_;
 
     stk->capacity = new_capacity;
+    
     #ifndef NO_PROTECT
+    
         const int cons = stk->right_stk_can;
         RIGHT_DATA_CAN_  = 0;
         stk->data_canary = (char*) realloc (stk->data_canary, new_capacity*sizeof(data_type) + 2 * sizeof(can_type));
         stk->data = (data_type*)(stk->data + sizeof(can_type));
         RIGHT_DATA_CAN_ = cons;
+    
     #endif
+    
     #ifdef NO_PROTECT
+    
         stk->data = (data_type*) realloc (stk->data, new_capacity*sizeof(data_type));
+    
     #endif
 
     CHECK_STK_;
@@ -104,24 +120,24 @@ void StackDump (Stack* stk, const int line, const int error)
     FILE* canary_file = fopen("canary_errors.txt", "w");
     fprintf(canary_file, "ERROR types:\n"
     "NO_ERROR              =  0\n"
-    "STACK_UNDERFLOW       = -1\n"
-    "STACK_OVERFLOW        = -2\n"
-    "DATA_SIZE_ERR         = -3\n"
-    "DATA_CAPACITY_ERR     = -4\n"
-    "NULL_STK_POINTER      = -5\n"
-    "DATA_LEFT_CANARY_ERR  = -6\n"
-    "DATA_RIGHT_CANARY_ERR = -7\n"
-    "STK_LEFT_CANARY_ERR   = -8\n"
-    "STK_RIGHT_CANARY_ERR  = -9\n"
-    "HASH_ERR              = -10\n\n");
+    "STACK UNDERFLOW       = -1\n"
+    "STACK OVERFLOW        = -2\n"
+    "DATA SIZE_ERR         = -3\n"
+    "DATA CAPACITY_ERR     = -4\n"
+    "NULL STK_POINTER      = -5\n"
+    "DATA LEFT_CANARY_ERR  = -6\n"
+    "DATA RIGHT_CANARY_ERR = -7\n"
+    "STK LEFT CANARY_ERR   = -8\n"
+    "STK RIGHT CANARY ERR  = -9\n"
+    "HASH ERR              = -10\n\n");
 
     #ifdef NO_PROTECT
-        fprintf(canary_file, "<<No canary protect>>\n");
+        fprintf(canary_file, "<< No canary protect >>\n");
     #else 
         #ifdef TWO_LVL_PROTECT
-            fprintf(canary_file, "<<Canary protection and hash protection>>\n");
+            fprintf(canary_file, "<< Canary protection and hash protection >>\n");
         #else
-            fprintf(canary_file, "<<Canary protection>>\n");
+            fprintf(canary_file, "<< Canary protection >>\n");
         #endif
         if (error < 0)
         {
@@ -183,10 +199,14 @@ int stk_status(Stack* stk)
 
         else if (stk->right_stk_can != const_r_stk_canary)   
             return STK_RIGHT_CANARY_ERR;
+    
     #endif
+    
     #ifdef TWO_LVL_PROTECT
+    
         if ( MurMurHash(stk) != stk->hash)
             return HASH_ERR;
+    
     #endif
 
     if (stk->size <= -1)
